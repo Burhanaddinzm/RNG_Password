@@ -20,7 +20,7 @@ string PassGen()
 
     for (int i = 0; i < Length; i++)
     {
-        password[i] = chars[random.Next(0, 75)];
+        password[i] = chars[random.Next(0, chars.Length-1)];
         finalPassword += password[i];
     }
     Console.WriteLine(finalPassword);
