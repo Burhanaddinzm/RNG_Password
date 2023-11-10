@@ -1,60 +1,67 @@
-﻿RunApp();
+﻿using System;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 
-string PassGen()
+class Program
 {
-    char[] chars = new char[] {
-    'A', 'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e',
-    'F', 'f', 'G', 'g', 'H', 'h', 'I', 'i', 'J', 'j',
-    'K', 'k', 'L', 'l', 'M', 'm', 'N', 'n', 'O', 'o',
-    'P', 'p', 'Q', 'q', 'R', 'r', 'S', 's', 'T', 't',
-    'U', 'u', 'V', 'v', 'W', 'w', 'X', 'x', 'Y', 'y',
-    'Z', 'z','!','@','#','$','%','^','&','*','(',')',
-    '-','+','_','=','1','2','3','4','5','6','7','8',
-    '9','0'
-};
-    Console.WriteLine("Input password length:");
-    int.TryParse(Console.ReadLine(), out int Length);
-    char[] password = new char[Length];
-    string finalPassword = default;
-    Random random = new Random();
+    private readonly char[] chars = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz!@#$%^&*()-+_1234567890".ToCharArray();
+    private readonly Random random = new Random();
 
-    for (int i = 0; i < Length; i++)
+    static void Main()
     {
-        password[i] = chars[random.Next(0, chars.Length-1)];
-        finalPassword += password[i];
+        Program program = new Program();
+        program.RunApp();
     }
-    Console.WriteLine(finalPassword);
-    return finalPassword;
-}
-void SavePassword()
-{
-    string path = Directory.GetCurrentDirectory() + @"\Password.txt";
-    StreamWriter w = new StreamWriter(path);
-    w.WriteLine(PassGen());
-    w.Close();
-}
-void Menu()
-{
-    Console.WriteLine("1.Generate Password");
-    Console.WriteLine("0.Close App");
-}
-void RunApp()
-{
-    Menu();
-    string request = Console.ReadLine();
-    while (request != "0")
+
+    string PassGen(int length)
     {
-        switch (request)
+        StringBuilder finalPassword = new StringBuilder(length);
+
+        for (int i = 0; i < length; i++)
         {
-            case "1":
-                SavePassword();
-                break;
-            default:
-                Console.WriteLine("Invalid request!");
-                break;
+            finalPassword.Append(chars[random.Next(chars.Length)]);
         }
-        Menu();
-        request = Console.ReadLine();
+
+        Console.WriteLine(finalPassword);
+        return finalPassword.ToString();
     }
 
+    void SavePassword()
+    {
+        Console.WriteLine("Input password length:");
+        int.TryParse(Console.ReadLine(), out int length);
+        string path = Path.Combine(Directory.GetCurrentDirectory(), "Password.txt");
+        using (StreamWriter w = new StreamWriter(path))
+        {
+            w.WriteLine(PassGen(length)); // You can adjust the password length here
+        }
+    }
+
+    void Menu()
+    {
+        Console.WriteLine("1. Generate Password");
+        Console.WriteLine("0. Close App");
+    }
+
+    void RunApp()
+    {
+        Menu();
+        string request = Console.ReadLine();
+        while (request != "0")
+        {
+            switch (request)
+            {
+                case "1":
+                    // Run SavePassword asynchronously and wait for it to complete
+                    Task.WaitAll(Task.Run(() => SavePassword()));
+                    break;
+                default:
+                    Console.WriteLine("Invalid request!");
+                    break;
+            }
+            Menu();
+            request = Console.ReadLine();
+        }
+    }
 }
